@@ -83,9 +83,9 @@ struct Game {
 	}
 
 	//declare circle shape
-	circle.radius = 50;
-	circle.center.x = 100;
-	circle.center.y = 100;
+	circle.radius = 150;
+	circle.center.x = 500;
+	circle.center.y = 0;
     }
 };
 
@@ -265,6 +265,16 @@ void movement(Game *game)
 		p->velocity.y *= rnd() * -0.5;
 	    }		
 	}
+	float d0, d1, dist;
+	d0 = p->s.center.x - game->circle.center.x;
+	d1 = p->s.center.y - game->circle.center.y;
+	dist = sqrt(d0*d0 + d1*d1);
+	if(dist < game->circle.radius) {
+	    //collision
+	    p->velocity.x += d0/dist;
+	    p->velocity.y += d1/dist;
+
+	}
 
 
 	//check for off-screen
@@ -278,22 +288,30 @@ void movement(Game *game)
 
 void render(Game *game)
 {
-    float w, h, r;
+    float w, h;
     glClear(GL_COLOR_BUFFER_BIT);
     //Draw shapes...
 
+    const int n=40;
+    static int firsttime = 1;
+    static Vec vert[n];
+    if(firsttime) { 
+	float ang = 0.0, inc = (3.14159*2.0) / (float)n;
+	for(int i=0; i<n; i++) {
+	    vert[i].x = cos(ang)*game->circle.radius;
+	    vert[i].y = sin(ang)*game->circle.radius;
+	    ang += inc;
+	}
+	firsttime=0;
+    }	
     //draw circle
-    Shape *c;
     glColor3ub(90,140,90);
-    c = &game->circle;
-    glPushMatrix();
-    glTranslatef(c->center.x, c->center.y, c->center.x);
-    r = c->radius;
-    glBegin(GL_QUADS);
-
+    glBegin(GL_LINE_LOOP);
+    for(int i=0; i<n; i++) {
+	glVertex2i(game->circle.center.x + vert[i].x, 
+		game->circle.center.y + vert[i].y);
+    }
     glEnd();
-    glPopMatrix();
-
 
 
     //draw box
